@@ -57,15 +57,21 @@ def test_run_ft_pool():
     _test_run_pool(run_ft_pool)
 
 
+# https://gist.github.com/danieltahara/92d53fe6854c63058347764ca280681c
+# https://codewithoutrules.com/2018/09/04/python-multiprocessing/
+# https://stackoverflow.com/questions/12984003/status-of-mixing-multiprocessing-and-threading-in-python
+# https://docs.python.org/3/library/multiprocessing.html
 if __name__ == "__main__":
     """
-    python threadlock.py thread_(futures|mp) (futures|mp) [init_in_main]
+    python threadlock.py thread_(futures|mp) (futures|mp) (spawn|fork) [init_in_main]
 
     thread_futures X ___ => Okay
     mp X ___ [+ ] => Hangs
     thread_futures X ___ +  init_in_main => Hangs
+
+    __ X __ X spawn => Okay
     """
-    multiprocessing.set_start_method("spawn")
+    multiprocessing.set_start_method(sys.argv[3])
 
     thread_futures = sys.argv[1] == "thread_futures"
 
@@ -78,6 +84,6 @@ if __name__ == "__main__":
         fn = test_run_mp_pool
 
     # Use the executor in the main process BEFORE multiprocesing
-    if len(sys.argv) > 3:
+    if len(sys.argv) > 4:
         run([1, 2])
     fn()
