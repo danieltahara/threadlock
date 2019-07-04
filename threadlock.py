@@ -21,33 +21,40 @@ class MyGlobal:
         return None
 
 
-def run_ft_pool(run, input_list, size=8):
+g = MyGlobal()
+
+
+def run(input_list):
+    g.run(input_list)
+
+
+def run_ft_pool(input_list, size=8):
     with concurrent.futures.ProcessPoolExecutor(max_workers=size) as pool:
         for _ in pool.map(run, [input_list] * size):
             pass
 
 
-def run_mp_pool(run, input_list, size=8):
+def run_mp_pool(input_list, size=8):
     pool = multiprocessing.Pool(size)
 
     for _ in pool.map(run, [input_list] * size):
         pass
 
 
-def _test_run_pool(fn, run):
+def _test_run_pool(fn):
     # g.run([1, 2, 3])
     print(f"Running with {fn.__name__}")
-    fn(run, [1, 2])
+    fn([1, 2])
     # fn([1, 2])
     assert False
 
 
-def test_run_mp_pool(run):
-    _test_run_pool(run_mp_pool, run)
+def test_run_mp_pool():
+    _test_run_pool(run_mp_pool)
 
 
-def test_run_ft_pool(run):
-    _test_run_pool(run_ft_pool, run)
+def test_run_ft_pool():
+    _test_run_pool(run_ft_pool)
 
 
 if __name__ == "__main__":
@@ -58,15 +65,12 @@ if __name__ == "__main__":
     mp X ___ [+ ] => Hangs
     thread_futures X ___ +  init_in_main => Hangs
     """
+    multiprocessing.set_start_method("spawn")
+
     thread_futures = sys.argv[1] == "thread_futures"
 
-    if thread_futures:
-        g = MyGlobal()
-    else:
+    if not thread_futures:
         g = MyGlobal(False)
-
-    def run(input_list):
-        g.run(input_list)
 
     futures = sys.argv[2] == "futures"
     fn = test_run_ft_pool
@@ -76,4 +80,4 @@ if __name__ == "__main__":
     # Use the executor in the main process BEFORE multiprocesing
     if len(sys.argv) > 3:
         run([1, 2])
-    fn(run)
+    fn()
